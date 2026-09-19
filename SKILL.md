@@ -1,6 +1,6 @@
 ---
 name: macos-disk-cleanup
-description: This skill should be used when diagnosing or reclaiming disk space on macOS. Trigger it when the user asks why "System Data" is so large, when System Settings and `df` disagree about free space, when `rm` fails with "Operation not permitted" under ~/Library, when a cache cleanup is being planned or executed, or when the user wants to know what is actually consuming disk. Covers read-only auditing, risk-graded classification, and guarded execution.
+description: This skill should be used when diagnosing or reclaiming disk space on macOS. Trigger it whenever the user reports a full disk or low disk space, wants to free up or clean up storage, or asks what is consuming their disk — including phrasings such as "磁盘空间不足", "磁盘满了", "清理磁盘空间", "释放空间", "存储空间不够", and any question about the "System Data" / "系统数据" category being too large. Also trigger it when System Settings and `df` disagree about free space, when `rm` fails with "Operation not permitted" under ~/Library, or when any cache cleanup is being planned or executed. Covers read-only auditing, risk-graded classification, and guarded execution.
 agent_created: true
 ---
 
@@ -16,9 +16,11 @@ This workflow exists because macOS disk accounting and deletion behavior are **d
 
 ## When to use
 
-- The user asks why "System Data" is so large, or reports a full disk
-- `rm` fails with `Operation not permitted` and the user assumes it is a permissions issue and reaches for `sudo`
+- The user reports a full disk or low disk space ("磁盘空间不足", "磁盘满了", "空间不够用了")
+- The user wants to free up or clean up disk space ("清理磁盘空间", "释放空间", "清理缓存")
+- The user asks what is consuming their disk, or why the "System Data" / "系统数据" category is so large
 - System Settings and `df` disagree about free space
+- `rm` fails with `Operation not permitted` and the user assumes it is a permissions issue and reaches for `sudo`
 - Any cache cleanup under `~/Library` is being planned
 - The user needs to know whether a given directory can be deleted
 
