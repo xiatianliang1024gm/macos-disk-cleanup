@@ -10,6 +10,8 @@ agent_created: true
 
 Locate real disk usage on macOS, separate "safe to delete" from "system-protected, do not touch", and execute cleanup according to a risk grading.
 
+**What this skill delivers is the process, not a size list.** Which directories are large is entirely machine-specific — it depends on what the user has installed, which apps they run, and which toolchains they build with. Do **not** carry over concrete sizes or "the big wins are X and Y" conclusions from one machine to another. What transfers is: how to measure correctly, how to tell cache from user data, which paths are protected, and in what order to act.
+
 This workflow exists because macOS disk accounting and deletion behavior are **deeply counter-intuitive**. Judging by common sense leads to a chain of mistakes (see "Critical Pitfalls"). **Execute the four phases in order — never skip straight to deletion.**
 
 ## When to use
@@ -94,7 +96,7 @@ Every one of the following checks is mandatory:
 
 **Step 0: Confirm the Trash is empty.** If deletion was intercepted by the safe-delete layer (pitfall 11), the content only moved to Trash and the space is not yet free. Ask the user to empty the Trash in Finder before verifying.
 
-**Never judge cleanup results with `df`.** `df` excludes APFS purgeable space and under-reports — measured discrepancies exceed 7 GB.
+**Never judge cleanup results with `df`.** `df` excludes APFS purgeable space and under-reports by a wide margin — enough to make a successful cleanup look like it did nothing.
 
 ```bash
 diskutil info /System/Volumes/Data | grep "Container Free Space"   # the only trustworthy source
@@ -140,8 +142,8 @@ Each of these will be hit by anyone relying on common sense:
 
 12. **`~/.Trash` is itself TCC-protected.** An agent cannot enumerate the Trash (`ls ~/.Trash` returns `Operation not permitted`). Confirming the result requires the user to look in Finder, or inferring from the modification time of `ls -ld ~/.Trash`.
 
-13. **During the audit, inspect directory *composition*, not just size.** A single directory can mix "pure cache" with "software the user installed".
-    Example: `~/Library/pnpm` totals 4.6 GB, where `store` (4.4 GB) is a content-addressable cache (deletable), but `global` (201 MB) holds **globally installed CLI tools** — deleting it uninstalls the user's global packages, and `bin/` holds global binaries.
+13. **During the audit, inspect directory *composition*, not just size.** A single directory can mix "pure cache" with "software the user installed", and the *smaller* child is often the one that matters.
+    Example: `~/Library/pnpm` looks like pure package-manager cache, but it contains three different things — `store` is a content-addressable cache (deletable), `global` holds **globally installed CLI tools** (deleting it silently uninstalls the user's global packages), and `bin/` holds global binaries. Judging by the directory name alone destroys working tooling while reclaiming almost nothing.
     **Before deleting any directory, run `du -sh <dir>/*` to confirm what each child actually is.**
 
 ## Hard limits

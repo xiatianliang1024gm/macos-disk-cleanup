@@ -113,13 +113,13 @@ pgrep -if "Docker"  # may match unrelated processes
 Telltale signs: `[safe-delete] genie-trash`, `FSMoveObjectToTrashSync`, `SAFE_DELETE_FAIL_CLOSED`.
 App containers (e.g. `com.apple.geod`) cannot be moved to Trash and fail with `status -5000` — expected, skip them.
 
-**Never use `df`.** It excludes APFS purgeable space and under-reports by 7 GB or more in practice.
+**Never use `df`.** It excludes APFS purgeable space and under-reports by a wide margin, enough to make a successful cleanup look like it failed.
 
 ```bash
 diskutil info /System/Volumes/Data | grep "Container Free Space"   # the only trustworthy source
 ```
 
-Cross-check by looking at the target directory's size change (e.g. a Chrome profile dropping from 2.8 GB to 280 MB) — that proves the deletion actually took effect better than total free space does.
+Cross-check by looking at the target directory's own size change — re-run `du -sh` on the path you just cleaned. A directory that drops by an order of magnitude proves the deletion took effect better than total free space does (free space is also affected by purgeable space, snapshots, and anything the user did concurrently).
 
 **`~/.Trash` is TCC-protected and cannot be enumerated.** `ls ~/.Trash` returns `Operation not permitted`. Confirming an emptied Trash requires the user to check in Finder, or inferring from the modification time of `ls -ld ~/.Trash`.
 
